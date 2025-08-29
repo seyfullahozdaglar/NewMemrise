@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Flashcards</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #fca311;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: var(--light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.danger {
+            background-color: var(--danger);
+        }
+
+        select, input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            background-color: #f0f4ff;
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .progress {
+            margin: 20px 0;
+            font-weight: bold;
+            color: var(--gray);
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .summary {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        th {
+            background-color: var(--light);
+            font-weight: bold;
+            position: relative;
+        }
+
+        th:hover {
+            background-color: #e9ecef;
+        }
+
+        th.sorted-asc::after {
+            content: " ↑";
+            font-weight: bold;
+        }
+
+        th.sorted-desc::after {
+            content: " ↓";
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .import-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .badge.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .single-add-form {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #eee;
+            border-radius: var(--border-radius);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        .list-management {
+            margin: 20px 0;
+        }
+
+        .list-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: var(--light);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item.active {
+            background-color: #e0f7fa;
+            border-left: 4px solid var(--primary);
+        }
+
+        .list-item:hover {
+            background-color: #e9ecef;
+        }
+
+        /* small delete button for list items */
+        .list-item .delete-list-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 6px;
+            border-radius: 6px;
+        }
+        .list-item .delete-list-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 600px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-box {
+                min-width: 120px;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Vocabulary Flashcards</h1>
+                <p>Learn and practice vocabulary with spaced repetition</p>
+            </div>
+            <div class="control-group">
+                <label for="languageSelect">Language:</label>
+                <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="pl">Polish</option>
+                    <option value="tr">Turkish</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Dashboard View -->
+        <div id="dashboardView" class="view active">
+            <div class="list-management">
+                <h2>Your Lists</h2>
+                <div id="listsContainer" class="control-group">
+                    <!-- Lists will be rendered here -->
+                </div>
+                <div class="control-group">
+                    <input type="text" id="newListName" placeholder="New list name">
+                    <button id="createListBtn">Create New List</button>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">Total Cards</div>
+                    <div id="totalCards" class="stat-number">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Ready to Practice</div>
+                    <div id="readyToPractice" class="stat-number">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Never Practiced</div>
+                    <div id="neverPracticed" class="stat-number">0</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="batchSize">Batch Size:</label>
+                    <select id="batchSize">
+                        <option value="5">5 cards</option>
+                        <option value="10" selected>10 cards</option>
+                        <option value="15">15 cards</option>
+                        <option value="20">20 cards</option>
+                    </select>
+                    
+                    <label for="direction">Direction:</label>
+                    <select id="direction">
+                        <option value="wordToMeaning">Word → Meaning</option>
+                        <option value="meaningToWord">Meaning → Word</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <button id="learnNewBtn">Learn New Words</button>
+                    <button id="practiceLearnedBtn">Practice Learned Words</button>
+                    <button id="viewStatsBtn">View Statistics</button>
+                </div>
+                
+                <div class="control-group">
+                    <button id="importBtn">Import Cards</button>
+                    <button id="wipeAllBtn" class="danger">Wipe All Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practice View -->
+        <div id="practiceView" class="view">
+            <div class="progress" id="progressText">Question 1 of 10</div>
+            <div class="card">
+                <div class="question" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+            <div class="feedback" id="feedback" style="display: none;"></div>
+            <button id="backToDashboardBtn" style="margin-top: 20px;">Back to Dashboard</button>
+        </div>
+
+        <!-- Summary View -->
+        <div id="summaryView" class="view">
+            <div class="summary">
+                <h2 id="summaryTitle">Session Summary</h2>
+                <p id="summaryText"></p>
+                <button id="summaryBtn">Back to Dashboard</button>
+            </div>
+        </div>
+
+        <!-- Statistics View -->
+        <div id="statsView" class="view">
+            <button id="backFromStatsBtn" style="margin-bottom: 20px;">Back to Dashboard</button>
+            <h2>Card Statistics</h2>
+            <div class="control-group">
+                <button id="availableNowFilter" class="filter-btn active">Available Now</button>
+                <button id="neverPracticedFilter" class="filter-btn">Never Practiced</button>
+                <button id="allCardsFilter" class="filter-btn">All Cards</button>
+            </div>
+            <table id="statsTable">
+                <thead>
+                    <tr>
+                        <th data-sort="word" data-sort-direction="none">Word</th>
+                        <th data-sort="meaning" data-sort-direction="none">Meaning</th>
+                        <th data-sort="practiced" data-sort-direction="none">Practiced</th>
+                        <th data-sort="successRate" data-sort-direction="none">Success Rate</th>
+                        <th data-sort="nextDueAt" data-sort-direction="none">Next Due</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Import View -->
+        <div id="importView" class="view">
+            <h2>Import Cards</h2>
+            
+            <div class="single-add-form">
+                <h3>Add Single Card</h3>
+                <div class="form-group">
+                    <label for="wordInput">Word:</label>
+                    <input type="text" id="wordInput" placeholder="Enter word">
+                </div>
+                <div class="form-group">
+                    <label for="meaningInput">Meaning:</label>
+                    <input type="text" id="meaningInput" placeholder="Enter meaning">
+                </div>
+                <button id="addSingleCardBtn">Add Card</button>
+            </div>
+            
+            <div class="import-section">
+                <h3>Bulk Import</h3>
+                <p>Import cards from a text file with format: <code>word,meaning</code> on each line</p>
+                <input type="file" id="fileInput" accept=".txt,.csv">
+                <button id="processImportBtn" style="margin-top: 15px;">Process Import</button>
+            </div>
+            <div id="importResult" style="margin-top: 20px;"></div>
+            <button id="backFromImportBtn" style="margin-top: 20px;">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        // Data model and constants
+        const INTERVALS = [60, 300, 720, 1440, 2880, 4320, 10080, 20160, 43200, 129600, 172800, 216000, 259200]; // in minutes
+        const STORAGE_KEY = 'vocabularyFlashcards';
+        const LISTS_STORAGE_KEY = 'vocabularyFlashcardsLists';
+        const CURRENT_LIST_KEY = 'vocabularyFlashcardsCurrentList';
+        
+        // State management
+        let cards = [];
+        let lists = [];
+        let currentListId = null;
+        let currentSession = {
+            cards: [],
+            currentIndex: 0,
+            correctCount: 0,
+            type: '' // 'learn' or 'practice'
+        };
+
+        // DOM Elements
+        const views = {
+            dashboard: document.getElementById('dashboardView'),
+            practice: document.getElementById('practiceView'),
+            summary: document.getElementById('summaryView'),
+            stats: document.getElementById('statsView'),
+            import: document.getElementById('importView')
+        };
+
+        // Initialize the application
+        function init() {
+            loadLists();
+            loadCards();
+            updateDashboard();
+            setupEventListeners();
+            updateLanguageSelector();
+        }
+
+        // Load lists from localStorage
+        function loadLists() {
+            const storedLists = localStorage.getItem(LISTS_STORAGE_KEY);
+            if (storedLists) {
+                lists = JSON.parse(storedLists);
+            }
+            
+            // If no lists exist, create a default one
+            if (!lists || lists.length === 0) {
+                lists = [{
+                    id: generateId(),
+                    name: 'Default List',
+                    createdAt: new Date().toISOString()
+                }];
+                saveLists();
+            }
+            
+            // Load current list ID
+            const storedCurrentListId = localStorage.getItem(CURRENT_LIST_KEY);
+            currentListId = storedCurrentListId || lists[0].id;
+            
+            // Ensure currentListId exists (in case the stored id was deleted externally)
+            if (!lists.find(l => l.id === currentListId)) {
+                currentListId = lists[0].id;
+                localStorage.setItem(CURRENT_LIST_KEY, currentListId);
+            }
+            
+            renderLists();
+        }
+
+        // Save lists to localStorage
+        function saveLists() {
+            localStorage.setItem(LISTS_STORAGE_KEY, JSON.stringify(lists));
+        }
+
+        // Render lists in the dashboard
+        function renderLists() {
+            const listsContainer = document.getElementById('listsContainer');
+            listsContainer.innerHTML = '';
+            
+            lists.forEach(list => {
+                const listElement = document.createElement('div');
+                listElement.className = `list-item ${list.id === currentListId ? 'active' : ''}`;
+                
+                // Left: name
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = list.name;
+                nameSpan.style.flex = '1';
+                
+                // Right: delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-list-btn';
+                deleteBtn.title = 'Delete list';
+                deleteBtn.innerHTML = '🗑️';
+                
+                // click to select list (except when clicking delete)
+                listElement.addEventListener('click', () => {
+                    currentListId = list.id;
+                    localStorage.setItem(CURRENT_LIST_KEY, currentListId);
+                    loadCards();
+                    renderLists();
+                    updateDashboard();
+                });
+                
+                // delete action
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // prevent selecting the list
+                    deleteList(list.id);
+                });
+                
+                listElement.appendChild(nameSpan);
+                listElement.appendChild(deleteBtn);
+                
+                listsContainer.appendChild(listElement);
+            });
+        }
+
+        // Delete a list and its associated cards
+        function deleteList(listId) {
+            const toDelete = lists.find(l => l.id === listId);
+            if (!toDelete) return;
+            
+            const confirmMsg = `Delete the list "${toDelete.name}" and ALL its cards? This action cannot be undone.`;
+            if (!confirm(confirmMsg)) return;
+            
+            // Remove list from lists array
+            lists = lists.filter(l => l.id !== listId);
+            saveLists();
+            
+            // Remove cards belonging to that list from storage
+            const storedCardsStr = localStorage.getItem(STORAGE_KEY);
+            let allCards = storedCardsStr ? JSON.parse(storedCardsStr) : [];
+            allCards = allCards.filter(c => c.listId !== listId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards));
+            
+            // If deleted list was the current one, switch to a different list or create default
+            if (currentListId === listId) {
+                if (lists.length > 0) {
+                    currentListId = lists[0].id;
+                    localStorage.setItem(CURRENT_LIST_KEY, currentListId);
+                } else {
+                    // create default list
+                    const defaultList = {
+                        id: generateId(),
+                        name: 'Default List',
+                        createdAt: new Date().toISOString()
+                    };
+                    lists = [defaultList];
+                    saveLists();
+                    currentListId = defaultList.id;
+                    localStorage.setItem(CURRENT_LIST_KEY, currentListId);
+                }
+            }
+            
+            // Reload current list's cards into memory and update UI
+            loadCards();
+            renderLists();
+            updateDashboard();
+            alert('List deleted.');
+        }
+
+        // Get card count for a specific list
+        function getCardCountForList(listId) {
+            // We want counts from persistent storage (all cards), not only the currently-loaded "cards" array
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (!stored) return 0;
+            const all = JSON.parse(stored);
+            return all.filter(card => card.listId === listId).length;
+        }
+
+        // Load cards from localStorage for current list
+        function loadCards() {
+            const storedCards = localStorage.getItem(STORAGE_KEY);
+            if (storedCards) {
+                const allCards = JSON.parse(storedCards);
+                cards = allCards.filter(card => card.listId === currentListId);
+            } else {
+                cards = [];
+            }
+        }
+
+        // Save cards to localStorage
+        function saveCards() {
+            // First load all cards
+            const storedCards = localStorage.getItem(STORAGE_KEY);
+            let allCards = storedCards ? JSON.parse(storedCards) : [];
+            
+            // Remove current list's cards
+            allCards = allCards.filter(card => card.listId !== currentListId);
+            
+            // Add current list's cards
+            allCards = allCards.concat(cards);
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards));
+        }
+
+        // Update dashboard statistics
+        function updateDashboard() {
+            const totalCards = cards.length;
+            const neverPracticed = cards.filter(card => !card.practiced).length;
+            const readyToPractice = cards.filter(isCardReadyToPractice).length;
+            
+            document.getElementById('totalCards').textContent = totalCards;
+            document.getElementById('neverPracticed').textContent = neverPracticed;
+            document.getElementById('readyToPractice').textContent = readyToPractice;
+            
+            // Enable/disable buttons based on card availability
+            document.getElementById('learnNewBtn').disabled = neverPracticed === 0;
+            document.getElementById('practiceLearnedBtn').disabled = readyToPractice === 0;
+        }
+
+        // Check if a card is ready to practice
+        function isCardReadyToPractice(card) {
+            if (!card.practiced) return false;
+            
+            const now = new Date();
+            const dueDate = new Date(card.nextDueAt);
+            
+            return card.successRate < 0.7 || now >= dueDate;
+        }
+
+        // Switch between views
+        function showView(viewName) {
+            Object.keys(views).forEach(key => {
+                views[key].classList.remove('active');
+            });
+            views[viewName].classList.add('active');
+        }
+
+        // Generate a unique ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        // Start a learning session with new words
+        function startLearnSession() {
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const direction = document.getElementById('direction').value;
+            
+            const newWords = cards.filter(card => !card.practiced);
+            if (newWords.length === 0) {
+                alert('No new words to learn!');
+                return;
+            }
+            
+            // Shuffle and select cards
+            const selectedCards = shuffleArray(newWords).slice(0, batchSize);
+            
+            currentSession = {
+                cards: selectedCards,
+                currentIndex: 0,
+                correctCount: 0,
+                type: 'learn',
+                direction: direction
+            };
+            
+            showPracticeCard();
+            showView('practice');
+        }
+
+        // Start a practice session with learned words
+        function startPracticeSession() {
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const direction = document.getElementById('direction').value;
+            
+            const readyCards = cards.filter(isCardReadyToPractice);
+            if (readyCards.length === 0) {
+                alert('No cards are ready to practice right now. Please wait until due time or until more cards fall below 70%.');
+                return;
+            }
+            
+            // Shuffle and select cards
+            const selectedCards = shuffleArray(readyCards).slice(0, batchSize);
+            
+            currentSession = {
+                cards: selectedCards,
+                currentIndex: 0,
+                correctCount: 0,
+                type: 'practice',
+                direction: direction
+            };
+            
+            showPracticeCard();
+            showView('practice');
+        }
+
+        // Display the current practice card
+        function showPracticeCard() {
+            const { currentIndex, cards: sessionCards, direction } = currentSession;
+            const card = sessionCards[currentIndex];
+            
+            if (!card) {
+                endSession();
+                return;
+            }
+            
+            document.getElementById('progressText').textContent = 
+                `Question ${currentIndex + 1} of ${sessionCards.length}`;
+            
+            // Set question based on direction
+            const isWordToMeaning = direction === 'wordToMeaning';
+            document.getElementById('questionText').textContent = isWordToMeaning ? card.word : card.meaning;
+            
+            // Generate options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            // Get correct answer and distractors
+            const correctAnswer = isWordToMeaning ? card.meaning : card.word;
+            const distractors = getDistractors(card, isWordToMeaning);
+            
+            // Combine and shuffle options
+            const allOptions = [correctAnswer, ...distractors];
+            const shuffledOptions = shuffleArray(allOptions);
+            
+            // Create option elements
+            shuffledOptions.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => checkAnswer(option, correctAnswer));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Hide feedback
+            document.getElementById('feedback').style.display = 'none';
+        }
+
+        // Get distractors for multiple choice options
+        function getDistractors(card, isWordToMeaning) {
+            // Filter out the current card and get cards from current list only
+            const otherCards = cards.filter(c => c.id !== card.id && c.listId === currentListId);
+            
+            // If we don't have enough cards, return fewer distractors
+            if (otherCards.length < 3) {
+                return otherCards.map(d => isWordToMeaning ? d.meaning : d.word);
+            }
+            
+            // Shuffle and take up to 3
+            const shuffled = shuffleArray(otherCards);
+            const distractors = shuffled.slice(0, 3);
+            
+            // Return the appropriate field (word or meaning)
+            return distractors.map(d => isWordToMeaning ? d.meaning : d.word);
+        }
+
+        // Check if the selected answer is correct
+        function checkAnswer(selectedAnswer, correctAnswer) {
+            const isCorrect = selectedAnswer === correctAnswer;
+            const card = currentSession.cards[currentSession.currentIndex];
+            
+            // Update card stats
+            card.timesShown++;
+            if (isCorrect) {
+                card.correctCount++;
+            } else {
+                card.wrongCount++;
+            }
+            
+            card.successRate = card.correctCount / (card.correctCount + card.wrongCount);
+            card.lastAskedAt = new Date().toISOString();
+            
+            // For new cards in learning session, initialize scheduling
+            if (currentSession.type === 'learn') {
+                card.practiced = true;
+                card.scheduleIndex = 1;
+            } else {
+                // For practice session, update scheduling
+                if (isCorrect) {
+                    card.scheduleIndex = Math.min(card.scheduleIndex + 1, INTERVALS.length - 1);
+                } else {
+                    card.scheduleIndex = Math.max(0, card.scheduleIndex - 1);
+                }
+            }
+            
+            // Calculate next due date
+            const intervalMinutes = INTERVALS[card.scheduleIndex];
+            const nextDueDate = new Date();
+            nextDueDate.setMinutes(nextDueDate.getMinutes() + intervalMinutes);
+            card.nextDueAt = nextDueDate.toISOString();
+            
+            // Update session stats
+            if (isCorrect) {
+                currentSession.correctCount++;
+            }
+            
+            // Show feedback
+            const feedbackElement = document.getElementById('feedback');
+            feedbackElement.textContent = isCorrect ? 'Correct!' : `Incorrect. The answer is: ${correctAnswer}`;
+            feedbackElement.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedbackElement.style.display = 'block';
+            
+            // Disable options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (option.textContent === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (option.textContent === selectedAnswer && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            // Auto-advance after delay
+            setTimeout(() => {
+                currentSession.currentIndex++;
+                
+                if (currentSession.currentIndex < currentSession.cards.length) {
+                    showPracticeCard();
+                } else {
+                    endSession();
+                }
+                
+                saveCards();
+            }, 700);
+        }
+
+        // End the current session and show summary
+        function endSession() {
+            const { correctCount, cards: sessionCards, type } = currentSession;
+            const totalQuestions = sessionCards.length;
+            const accuracy = totalQuestions > 0 ? (correctCount / totalQuestions * 100).toFixed(1) : 0;
+            
+            document.getElementById('summaryTitle').textContent = 
+                type === 'learn' ? 'Learning Session Complete' : 'Practice Session Complete';
+            document.getElementById('summaryText').textContent = 
+                `You got ${correctCount} out of ${totalQuestions} correct (${accuracy}% accuracy).`;
+            
+            showView('summary');
+            updateDashboard();
+        }
+
+        // Show statistics table with sorting
+        function showStatistics(filter = 'availableNow') {
+            const tableBody = document.getElementById('statsTableBody');
+            tableBody.innerHTML = '';
+            
+            let filteredCards = [];
+            
+            switch (filter) {
+                case 'availableNow':
+                    filteredCards = cards.filter(isCardReadyToPractice);
+                    break;
+                case 'neverPracticed':
+                    filteredCards = cards.filter(card => !card.practiced);
+                    break;
+                default:
+                    filteredCards = [...cards];
+            }
+            
+            // Apply sorting if any
+            const sortHeader = document.querySelector('th[data-sort-direction="asc"], th[data-sort-direction="desc"]');
+            if (sortHeader) {
+                const sortBy = sortHeader.dataset.sort;
+                const sortDirection = sortHeader.dataset.sortDirection;
+                
+                filteredCards.sort((a, b) => {
+                    let valueA = a[sortBy];
+                    let valueB = b[sortBy];
+                    
+                    // Handle special cases
+                    if (sortBy === 'nextDueAt') {
+                        valueA = valueA ? new Date(valueA).getTime() : 0;
+                        valueB = valueB ? new Date(valueB).getTime() : 0;
+                    }
+                    
+                    if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+                    if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            
+            filteredCards.forEach(card => {
+                const row = document.createElement('tr');
+                
+                // Format last asked date
+                const lastAsked = card.lastAskedAt ? 
+                    new Date(card.lastAskedAt).toLocaleDateString() : 'Never';
+                
+                // Format next due date with time
+                let nextDue = 'Not scheduled';
+                let dueBadge = '';
+                if (card.nextDueAt) {
+                    const dueDate = new Date(card.nextDueAt);
+                    nextDue = dueDate.toLocaleString(); // Show both date and time
+                    
+                    const now = new Date();
+                    if (dueDate < now) {
+                        dueBadge = '<span class="badge danger">Overdue</span>';
+                    } else if ((dueDate - now) < 24 * 60 * 60 * 1000) {
+                        dueBadge = '<span class="badge warning">Due soon</span>';
+                    } else {
+                        dueBadge = '<span class="badge success">Scheduled</span>';
+                    }
+                }
+                
+                // Format success rate
+                let successRate = 'N/A';
+                let successBadge = '';
+                if (card.practiced && card.timesShown > 0) {
+                    successRate = `${(card.successRate * 100).toFixed(1)}%`;
+                    
+                    if (card.successRate >= 0.7) {
+                        successBadge = '<span class="badge success">Good</span>';
+                    } else if (card.successRate >= 0.5) {
+                        successBadge = '<span class="badge warning">Needs work</span>';
+                    } else {
+                        successBadge = '<span class="badge danger">Poor</span>';
+                    }
+                }
+                
+                row.innerHTML = `
+                    <td>${card.word}</td>
+                    <td>${card.meaning}</td>
+                    <td>${card.practiced ? 'Yes' : 'No'}</td>
+                    <td>${successRate} ${successBadge}</td>
+                    <td>${nextDue} ${dueBadge}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Sort table by column
+        function sortTable(columnName) {
+            const header = document.querySelector(`th[data-sort="${columnName}"]`);
+            const currentDirection = header.dataset.sortDirection;
+            
+            // Reset all headers
+            document.querySelectorAll('th[data-sort]').forEach(h => {
+                h.dataset.sortDirection = 'none';
+                h.classList.remove('sorted-asc', 'sorted-desc');
+            });
+            
+            // Set new sort direction
+            if (currentDirection === 'none' || currentDirection === 'desc') {
+                header.dataset.sortDirection = 'asc';
+                header.classList.add('sorted-asc');
+            } else {
+                header.dataset.sortDirection = 'desc';
+                header.classList.add('sorted-desc');
+            }
+            
+            // Get current filter
+            const activeFilter = document.querySelector('.filter-btn.active').id;
+            let filterType = 'all';
+            if (activeFilter === 'availableNowFilter') filterType = 'availableNow';
+            if (activeFilter === 'neverPracticedFilter') filterType = 'neverPracticed';
+            
+            // Refresh table with sorting
+            showStatistics(filterType);
+        }
+
+        // Import cards from file
+        function importCards(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const lines = content.split('\n');
+                let importedCount = 0;
+                let updatedCount = 0;
+                
+                lines.forEach(line => {
+                    const [word, meaning] = line.split(',').map(s => s.trim());
+                    if (word && meaning) {
+                        // Check if word already exists in current list
+                        const existingIndex = cards.findIndex(c => c.word === word && c.listId === currentListId);
+                        
+                        if (existingIndex >= 0) {
+                            // Update existing card
+                            cards[existingIndex].meaning = meaning;
+                            updatedCount++;
+                        } else {
+                            // Add new card
+                            cards.push({
+                                id: generateId(),
+                                word,
+                                meaning,
+                                practiced: false,
+                                timesShown: 0,
+                                correctCount: 0,
+                                wrongCount: 0,
+                                successRate: 0,
+                                lastAskedAt: null,
+                                scheduleIndex: 0,
+                                nextDueAt: null,
+                                listId: currentListId
+                            });
+                            importedCount++;
+                        }
+                    }
+                });
+                
+                saveCards();
+                updateDashboard();
+                
+                document.getElementById('importResult').innerHTML = `
+                    <div class="feedback success">
+                        Import completed!<br>
+                        ${importedCount} new cards imported<br>
+                        ${updatedCount} existing cards updated
+                    </div>
+                `;
+            };
+            reader.readAsText(file);
+        }
+
+        // Add a single card
+        function addSingleCard() {
+            const word = document.getElementById('wordInput').value.trim();
+            const meaning = document.getElementById('meaningInput').value.trim();
+            
+            if (!word || !meaning) {
+                alert('Please enter both word and meaning');
+                return;
+            }
+            
+            // Check if word already exists in current list
+            const existingIndex = cards.findIndex(c => c.word === word && c.listId === currentListId);
+            
+            if (existingIndex >= 0) {
+                // Update existing card
+                cards[existingIndex].meaning = meaning;
+                alert('Card updated successfully!');
+            } else {
+                // Add new card
+                cards.push({
+                    id: generateId(),
+                    word,
+                    meaning,
+                    practiced: false,
+                    timesShown: 0,
+                    correctCount: 0,
+                    wrongCount: 0,
+                    successRate: 0,
+                    lastAskedAt: null,
+                    scheduleIndex: 0,
+                    nextDueAt: null,
+                    listId: currentListId
+                });
+                alert('Card added successfully!');
+            }
+            
+            // Clear inputs
+            document.getElementById('wordInput').value = '';
+            document.getElementById('meaningInput').value = '';
+            
+            saveCards();
+            updateDashboard();
+        }
+
+        // Create a new list
+        function createNewList() {
+            const listName = document.getElementById('newListName').value.trim();
+            
+            if (!listName) {
+                alert('Please enter a list name');
+                return;
+            }
+            
+            const newList = {
+                id: generateId(),
+                name: listName,
+                createdAt: new Date().toISOString()
+            };
+            
+            lists.push(newList);
+            saveLists();
+            
+            // Clear input
+            document.getElementById('newListName').value = '';
+            
+            // Switch to the new list
+            currentListId = newList.id;
+            localStorage.setItem(CURRENT_LIST_KEY, currentListId);
+            loadCards();
+            renderLists();
+            updateDashboard();
+        }
+
+        // Wipe all data after confirmation
+        function wipeAllData() {
+            if (confirm('Are you sure you want to delete all cards? This action cannot be undone.')) {
+                cards = [];
+                saveCards();
+                updateDashboard();
+                alert('All data has been wiped.');
+            }
+        }
+
+        // Update language selector based on stored preference
+        function updateLanguageSelector() {
+            const storedLanguage = localStorage.getItem('vocabularyFlashcardsLanguage');
+            if (storedLanguage) {
+                document.getElementById('languageSelect').value = storedLanguage;
+            }
+            
+            // Apply translations
+            applyTranslations();
+        }
+// Replace your existing applyTranslations() with this function
+function applyTranslations() {
+    const language = document.getElementById('languageSelect').value;
+    // Store preference
+    localStorage.setItem('vocabularyFlashcardsLanguage', language);
+
+    // Translation table for the UI strings we need to update
+    const texts = {
+        en: {
+            title: 'Vocabulary Flashcards',
+            subtitle: 'Learn and practice vocabulary with spaced repetition',
+            learnNewBtn: 'Learn New Words',
+            practiceLearnedBtn: 'Practice Learned Words',
+            viewStatsBtn: 'View Statistics',
+            importBtn: 'Import Cards',
+            wipeAllBtn: 'Wipe All Data',
+            createListBtn: 'Create New List',
+            addSingleCardBtn: 'Add Card',
+            processImportBtn: 'Process Import',
+            backToDashboardBtn: 'Back to Dashboard',
+            summaryBtn: 'Back to Dashboard',
+            backFromStatsBtn: 'Back to Dashboard',
+            backFromImportBtn: 'Back to Dashboard',
+            availableNowFilter: 'Available Now',
+            neverPracticedFilter: 'Never Practiced',
+            allCardsFilter: 'All Cards',
+            newListPlaceholder: 'New list name',
+            wordPlaceholder: 'Enter word',
+            meaningPlaceholder: 'Enter meaning',
+            batchSizeLabel: 'Batch Size:',
+            directionLabel: 'Direction:',
+            addSingleHeader: 'Add Single Card',
+            bulkImportHeader: 'Bulk Import',
+            yourListsHeader: 'Your Lists',
+            deleteListTitle: 'Delete list',
+            statsHeaders: {
+                word: 'Word',
+                meaning: 'Meaning',
+                practiced: 'Practiced',
+                successRate: 'Success Rate',
+                nextDueAt: 'Next Due'
+            }
+        },
+        pl: {
+            title: 'Fiszki Słownictwa',
+            subtitle: 'Ucz się i ćwicz słownictwo z powtórkami spaced',
+            learnNewBtn: 'Ucz się nowych słów',
+            practiceLearnedBtn: 'Ćwicz opanowane słowa',
+            viewStatsBtn: 'Pokaż statystyki',
+            importBtn: 'Importuj fiszki',
+            wipeAllBtn: 'Usuń wszystkie dane',
+            createListBtn: 'Utwórz nową listę',
+            addSingleCardBtn: 'Dodaj fiszkę',
+            processImportBtn: 'Przetwórz import',
+            backToDashboardBtn: 'Powrót do pulpitu',
+            summaryBtn: 'Powrót do pulpitu',
+            backFromStatsBtn: 'Powrót do pulpitu',
+            backFromImportBtn: 'Powrót do pulpitu',
+            availableNowFilter: 'Dostępne teraz',
+            neverPracticedFilter: 'Nigdy nie ćwiczone',
+            allCardsFilter: 'Wszystkie fiszki',
+            newListPlaceholder: 'Nazwa nowej listy',
+            wordPlaceholder: 'Wpisz słowo',
+            meaningPlaceholder: 'Wpisz znaczenie',
+            batchSizeLabel: 'Ilość w partii:',
+            directionLabel: 'Kierunek:',
+            addSingleHeader: 'Dodaj jedną fiszkę',
+            bulkImportHeader: 'Import zbiorczy',
+            yourListsHeader: 'Twoje listy',
+            deleteListTitle: 'Usuń listę',
+            statsHeaders: {
+                word: 'Słowo',
+                meaning: 'Znaczenie',
+                practiced: 'Ćwiczone',
+                successRate: 'Skuteczność',
+                nextDueAt: 'Następne'
+            }
+        },
+        tr: {
+            title: 'Kelime Kartları',
+            subtitle: 'Spaced repetition ile kelime öğrenin ve pratik yapın',
+            learnNewBtn: 'Yeni Kelimeler Öğren',
+            practiceLearnedBtn: 'Öğrenilenleri Pratik Yap',
+            viewStatsBtn: 'İstatistikleri Görüntüle',
+            importBtn: 'Kartları İçeri Aktar',
+            wipeAllBtn: 'Tüm Verileri Sil',
+            createListBtn: 'Yeni Liste Oluştur',
+            addSingleCardBtn: 'Kart Ekle',
+            processImportBtn: 'İçe Aktarımı İşle',
+            backToDashboardBtn: 'Panoya Dön',
+            summaryBtn: 'Panoya Dön',
+            backFromStatsBtn: 'Panoya Dön',
+            backFromImportBtn: 'Panoya Dön',
+            availableNowFilter: 'Şimdi Kullanılabilir',
+            neverPracticedFilter: 'Hiç Çalışılmadı',
+            allCardsFilter: 'Tüm Kartlar',
+            newListPlaceholder: 'Yeni liste adı',
+            wordPlaceholder: 'Kelime girin',
+            meaningPlaceholder: 'Anlam girin',
+            batchSizeLabel: 'Parti Boyutu:',
+            directionLabel: 'Yön:',
+            addSingleHeader: 'Tek Kart Ekle',
+            bulkImportHeader: 'Toplu İçe Aktarma',
+            yourListsHeader: 'Listeleriniz',
+            deleteListTitle: 'Listeyi sil',
+            statsHeaders: {
+                word: 'Kelime',
+                meaning: 'Anlam',
+                practiced: 'Çalışıldı',
+                successRate: 'Başarı Oranı',
+                nextDueAt: 'Sonraki'
+            }
+        }
+    };
+
+    const t = texts[language] || texts.en;
+
+    // Titles / headings
+    const h1 = document.querySelector('h1');
+    if (h1) h1.textContent = t.title;
+    const headerP = document.querySelector('header p');
+    if (headerP) headerP.textContent = t.subtitle;
+
+    // Buttons
+    const setTextIfExists = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+
+    setTextIfExists('learnNewBtn', t.learnNewBtn);
+    setTextIfExists('practiceLearnedBtn', t.practiceLearnedBtn);
+    setTextIfExists('viewStatsBtn', t.viewStatsBtn);
+    setTextIfExists('importBtn', t.importBtn);
+    // wipeAllBtn is styled with .danger -> keep the class but update label
+    setTextIfExists('wipeAllBtn', t.wipeAllBtn);
+    setTextIfExists('createListBtn', t.createListBtn);
+    setTextIfExists('addSingleCardBtn', t.addSingleCardBtn);
+    setTextIfExists('processImportBtn', t.processImportBtn);
+    setTextIfExists('backToDashboardBtn', t.backToDashboardBtn);
+    setTextIfExists('summaryBtn', t.summaryBtn);
+    setTextIfExists('backFromStatsBtn', t.backFromStatsBtn);
+    setTextIfExists('backFromImportBtn', t.backFromImportBtn);
+
+    // Filter buttons
+    const setFilterText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+    setFilterText('availableNowFilter', t.availableNowFilter);
+    setFilterText('neverPracticedFilter', t.neverPracticedFilter);
+    setFilterText('allCardsFilter', t.allCardsFilter);
+
+    // Placeholders and labels
+    const newListInput = document.getElementById('newListName');
+    if (newListInput) newListInput.placeholder = t.newListPlaceholder;
+
+    const wordInput = document.getElementById('wordInput');
+    if (wordInput) wordInput.placeholder = t.wordPlaceholder;
+
+    const meaningInput = document.getElementById('meaningInput');
+    if (meaningInput) meaningInput.placeholder = t.meaningPlaceholder;
+
+    const batchLabel = document.querySelector('label[for="batchSize"]');
+    if (batchLabel) batchLabel.textContent = t.batchSizeLabel;
+
+    const directionLabel = document.querySelector('label[for="direction"]');
+    if (directionLabel) directionLabel.textContent = t.directionLabel;
+
+    // Section headers (best-effort: update if they exist)
+    const listHeader = document.querySelector('.list-management h2');
+    if (listHeader) listHeader.textContent = t.yourListsHeader;
+
+    const addSingleHeader = document.querySelector('.single-add-form h3');
+    if (addSingleHeader) addSingleHeader.textContent = t.addSingleHeader;
+
+    const bulkHeader = document.querySelector('.import-section h3');
+    if (bulkHeader) bulkHeader.textContent = t.bulkImportHeader;
+
+    // Stats table headers
+    const setTh = (selector, text) => {
+        const el = document.querySelector(selector);
+        if (el) el.textContent = text;
+    };
+    setTh('th[data-sort="word"]', t.statsHeaders.word);
+    setTh('th[data-sort="meaning"]', t.statsHeaders.meaning);
+    setTh('th[data-sort="practiced"]', t.statsHeaders.practiced);
+    setTh('th[data-sort="successRate"]', t.statsHeaders.successRate);
+    setTh('th[data-sort="nextDueAt"]', t.statsHeaders.nextDueAt);
+
+    // Update dynamically created delete buttons' title (if any rendered)
+    document.querySelectorAll('.delete-list-btn').forEach(btn => {
+        btn.title = t.deleteListTitle;
+    });
+}
+
+        // Shuffle array using Fisher-Yates algorithm
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Dashboard buttons
+            document.getElementById('learnNewBtn').addEventListener('click', startLearnSession);
+            document.getElementById('practiceLearnedBtn').addEventListener('click', startPracticeSession);
+            document.getElementById('viewStatsBtn').addEventListener('click', () => {
+                showStatistics('availableNow');
+                showView('stats');
+            });
+            document.getElementById('importBtn').addEventListener('click', () => showView('import'));
+            document.getElementById('wipeAllBtn').addEventListener('click', wipeAllData);
+            document.getElementById('createListBtn').addEventListener('click', createNewList);
+            
+            // Back buttons
+            document.getElementById('backToDashboardBtn').addEventListener('click', () => showView('dashboard'));
+            document.getElementById('summaryBtn').addEventListener('click', () => showView('dashboard'));
+            document.getElementById('backFromStatsBtn').addEventListener('click', () => showView('dashboard'));
+            document.getElementById('backFromImportBtn').addEventListener('click', () => showView('dashboard'));
+            
+            // Import functionality
+            document.getElementById('processImportBtn').addEventListener('click', () => {
+                const fileInput = document.getElementById('fileInput');
+                if (fileInput.files.length > 0) {
+                    importCards(fileInput.files[0]);
+                } else {
+                    alert('Please select a file to import.');
+                }
+            });
+            
+            // Add single card
+            document.getElementById('addSingleCardBtn').addEventListener('click', addSingleCard);
+            
+            // Statistics filters
+            document.getElementById('availableNowFilter').addEventListener('click', () => {
+                setActiveFilter('availableNowFilter');
+                showStatistics('availableNow');
+            });
+            document.getElementById('neverPracticedFilter').addEventListener('click', () => {
+                setActiveFilter('neverPracticedFilter');
+                showStatistics('neverPracticed');
+            });
+            document.getElementById('allCardsFilter').addEventListener('click', () => {
+                setActiveFilter('allCardsFilter');
+                showStatistics('all');
+            });
+            
+            // Table sorting
+            document.querySelectorAll('th[data-sort]').forEach(header => {
+                header.addEventListener('click', () => {
+                    sortTable(header.dataset.sort);
+                });
+            });
+            
+            // Language selection
+            document.getElementById('languageSelect').addEventListener('change', applyTranslations);
+        }
+
+        // Set active filter button
+        function setActiveFilter(activeId) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(activeId).classList.add('active');
+        }
+
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
